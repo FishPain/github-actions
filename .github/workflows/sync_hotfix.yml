@@ -1,0 +1,33 @@
+name: Merge Hotfix Changes to Development Branch
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  merge_hotfix_to_development:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'hotfix-') # Only run if the branch name starts with "hotfix-"
+    steps:
+      - name: Checkout master branch
+        uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Checkout development branch
+        uses: actions/checkout@v2
+        with:
+          ref: development
+      - name: Create new branch for hotfix changes
+        run: |
+          git checkout -b hotfix-branch
+          # Make hotfix changes to master branch
+          git push --set-upstream origin hotfix-branch
+      - name: Create pull request to merge hotfix changes to development
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: Merge hotfix changes to development branch
+          commit-message: Merge hotfix changes from master to development
+          branch: hotfix-branch
+          base: development
